@@ -20,6 +20,7 @@
 import type { ComponentType } from 'react';
 
 // <custom:intent-imports>
+import { IconFilePlus, IconListCheck, IconCircleCheck, IconHelpHexagon, IconChecklist, IconGavel } from '@tabler/icons-react';
 // </custom:intent-imports>
 
 export interface IntentLink {
@@ -42,6 +43,12 @@ export interface IntentLink {
 
 export const INTENTS: IntentLink[] = [
   // <custom:intents>
+  { path: '/intents/anfrage-erfassen', label: { de: 'Anfrage erfassen', en: 'Capture request' }, icon: IconFilePlus, description: 'Legt ein Vorhaben mit der ursprünglichen Anfrage an und ordnet die erste Quelle zu.' },
+  { path: '/intents/anforderung-erfassen', label: { de: 'Anforderung erfassen', en: 'Record requirement' }, icon: IconListCheck, description: 'Erfasst eine Anforderung mit Quellenbezug und Prüfer zu einem Vorhaben.' },
+  { path: '/intents/anforderung-bestaetigen', label: { de: 'Anforderung prüfen und bestätigen', en: 'Review and confirm requirement' }, icon: IconCircleCheck, description: 'Der Prüfer bewertet eine Anforderung und bestätigt sie oder fordert eine Rückfrage an.' },
+  { path: '/intents/klaerungspunkt-aufgabe-anlegen', label: { de: 'Klärungspunkt mit Aufgabe anlegen', en: 'Create clarification with task' }, icon: IconHelpHexagon, description: 'Erfasst einen Klärungspunkt zu betroffenen Anforderungen und vergibt dazu direkt eine Aufgabe.' },
+  { path: '/intents/klaerungspunkt-abschliessen', label: { de: 'Klärungspunkt beantworten und klären', en: 'Answer and resolve clarification' }, icon: IconChecklist, description: 'Trägt die Antwort samt Quelle ein und schließt den Klärungspunkt nach fachlicher Prüfung ab.' },
+  { path: '/intents/entscheidung-dokumentieren', label: { de: 'Entscheidung dokumentieren', en: 'Document decision' }, icon: IconGavel, description: 'Hält eine fachliche Entscheidung mit Begründung, Grundlagen und berücksichtigten Erfahrungen fest.' },
   // </custom:intents>
 ];
 
@@ -52,7 +59,7 @@ export const INTENTS: IntentLink[] = [
  * purpose — a scaffold update resets it to false (self-healing if Phase 2
  * never ran).
  */
-export const INTENTS_PENDING = true;
+export const INTENTS_PENDING = false;
 
 /**
  * When the Phase-1 bundle was deployed (ISO, set by the service together with
