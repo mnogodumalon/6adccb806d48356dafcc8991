@@ -1,0 +1,42 @@
+{
+  "pages": {
+    "en": {
+      "Abschließen": "Complete",
+      "Aktive Vorhaben": "Active projects",
+      "Alle Vorhaben sind abgeschlossen oder zurückgestellt.": "All projects are completed or on hold.",
+      "Allen": "All",
+      "Alles im Plan — oberste Priorität hat {0}.": "All on track — top priority is {0}.",
+      "Anforderung bestätigen": "Confirm requirement",
+      "Aufgabe öffnen": "Open task",
+      "Aufgaben von": "Tasks from",
+      "Eine Aufgabe ist überfällig": "One task is overdue",
+      "Erstes Vorhaben anlegen": "Create first project",
+      "Freigabe ausstehend": "Approval pending",
+      "Freigabe offen": "Approval open",
+      "Freigaben ausstehend": "Approvals pending",
+      "Kein Vorhaben mit diesem Befund — Filter oben erneut antippen.": "No project with this finding — tap the filter above again.",
+      "Keine Freigabe wartet auf Entscheidung.": "No approval awaiting decision.",
+      "Keine aktiven Vorhaben.": "No active projects.",
+      "Keine kritischen Klärungspunkte offen.": "No critical clarification items open.",
+      "Keine offenen Aufgaben.": "No open tasks.",
+      "Klärungspunkt abschließen": "Close clarification item",
+      "Kritisch offen: {0}.": "Critical open: {0}.",
+      "Kritische Klärungspunkte": "Critical clarification items",
+      "Kritische Risiken": "Critical risks",
+      "Lege dein erstes Vorhaben an und starte die Auftragsklärung.": "Create your first project and start the order clarification.",
+      "Muss ohne Bestätigung": "Must-have unconfirmed",
+      "Muss unbestätigt": "Must-have unconfirmed",
+      "Neues Vorhaben": "New project",
+      "Noch kein Vorhaben erfasst — beginne mit der ersten Kundenanfrage.": "No project recorded yet — start with the first customer inquiry.",
+      "Ziel": "Target",
+      "fällig war": "was due",
+      "krit. Klärungspunkte": "crit. clarification items",
+      "krit. Risiken": "crit. risks",
+      "{0} Aufgaben sind überfällig": "{0} tasks are overdue",
+      "Überfällig": "Overdue",
+      "Überfällige Aufgaben bei {0}.": "Overdue tasks for {0}.",
+      "überfällig": "overdue"
+    }
+  },
+  "v": 1
+}

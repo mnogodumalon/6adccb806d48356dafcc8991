@@ -1,0 +1,481 @@
+{
+  "version": 1,
+  "language": "de",
+  "understanding": {
+    "summary": "Die Anwendung begleitet technische Kundenanfragen von der ersten Anfrage bis zum geprüften und freigegebenen Ergebnis. Zu jedem Vorhaben werden Quellen, Anforderungen, Klärungspunkte, Aufgaben, Risiken, Entscheidungen und Nachrichten gesammelt. Am Ende steht ein versioniertes Ergebnisdokument. Gewonnene Erfahrungen bleiben für spätere Vorhaben nutzbar.",
+    "roles": [
+      "Aufklärungsverantwortlicher",
+      "Fachprüfer",
+      "Freigeber",
+      "Mitarbeiter",
+      "Administrator"
+    ],
+    "main_tasks": [
+      "Anfrage als Vorhaben erfassen und Quellen zuordnen",
+      "Anforderungen herausarbeiten und fachlich bestätigen",
+      "Klärungspunkte erfassen und Aufgaben vergeben",
+      "Entscheidungen und Rückfragen dokumentieren",
+      "Qualität prüfen und Freigabefähigkeit feststellen",
+      "Ergebnisdokument erzeugen und freigeben",
+      "Erfahrungen sichern und prüfen"
+    ],
+    "platform_roles": [
+      {
+        "persona": "Aufklärungsverantwortlicher",
+        "role": "datenverarbeitung",
+        "apps": [
+          "vorhaben",
+          "quellen",
+          "anforderungen",
+          "klaerungspunkte",
+          "risiken",
+          "aufgaben",
+          "entscheidungen",
+          "kommunikation",
+          "erfahrungen",
+          "ergebnisdokumente",
+          "mitarbeitende"
+        ]
+      },
+      {
+        "persona": "Fachprüfer",
+        "role": "standard",
+        "apps": [
+          "anforderungen",
+          "klaerungspunkte",
+          "risiken",
+          "erfahrungen",
+          "entscheidungen",
+          "vorhaben",
+          "quellen",
+          "mitarbeitende"
+        ]
+      },
+      {
+        "persona": "Freigeber",
+        "role": "datenverarbeitung",
+        "apps": [
+          "ergebnisdokumente",
+          "kommunikation",
+          "entscheidungen",
+          "vorhaben",
+          "mitarbeitende",
+          "erfahrungen"
+        ]
+      },
+      {
+        "persona": "Mitarbeiter",
+        "role": "standard",
+        "apps": [
+          "aufgaben",
+          "klaerungspunkte",
+          "kommunikation",
+          "quellen",
+          "mitarbeitende",
+          "anforderungen",
+          "vorhaben"
+        ]
+      },
+      {
+        "persona": "Administrator",
+        "role": "administrator",
+        "apps": [
+          "mitarbeitende",
+          "vorhaben",
+          "quellen",
+          "anforderungen",
+          "klaerungspunkte",
+          "risiken",
+          "aufgaben",
+          "entscheidungen",
+          "kommunikation",
+          "erfahrungen",
+          "ergebnisdokumente"
+        ]
+      }
+    ]
+  },
+  "flows": [
+    {
+      "slug": "anfrage-erfassen",
+      "label": {
+        "de": "Anfrage erfassen",
+        "en": "Capture request"
+      },
+      "description": "Legt ein Vorhaben mit der ursprünglichen Anfrage an und ordnet die erste Quelle zu.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "vorhaben",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "titel": "user",
+            "anfragebeschreibung": "user",
+            "kunde": "user",
+            "eingangsdatum": "derived:today",
+            "anfragequelle": "user",
+            "aufklaerungsverantwortlicher": "picked",
+            "vertraulichkeit": "user",
+            "aufklaerungsstatus": "fixed:neu",
+            "qualitaetsstatus": "fixed:nicht_geprueft",
+            "freigabestatus": "fixed:nicht_freigabefaehig",
+            "prioritaet": "user",
+            "wunschtermin": "user"
+          },
+          "needs": {}
+        },
+        {
+          "entity": "quellen",
+          "op": "create",
+          "when": "optional",
+          "fields": {
+            "vorhaben": "picked",
+            "titel": "user",
+            "quellentyp": "user",
+            "datei": "user",
+            "erfassungszeitpunkt": "derived:now",
+            "vertraulichkeit": "derived:from_pick:vorhaben.vertraulichkeit",
+            "pruefstatus": "fixed:ungeprueft",
+            "extraktionsstatus": "fixed:nicht_extrahiert"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `anfrage-erfassen` — Anfrage erfassen\nLegt ein Vorhaben mit der ursprünglichen Anfrage an und ordnet die erste Quelle zu.\n\n## Your hook — import it, never rebuild what it owns\n`import { useAnfrageErfassenFlow } from '@/lib/journey/flows/AnfrageErfassen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: aufklaerungsverantwortlicher, vorhaben), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Anfragedaten und Kunde eingeben\n2. Aufklärungsverantwortlichen wählen\n3. Erste Quelle zur Anfrage erfassen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `vorhaben`:\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `anfragebeschreibung`: the user enters it (bind it through the layer: form.field/…)\n    - `kunde`: the user enters it (bind it through the layer: form.field/…)\n    - `eingangsdatum`: derived: today() — set it in the plan step, never ask\n    - `anfragequelle`: the user enters it (bind it through the layer: form.field/…)\n    - `aufklaerungsverantwortlicher`: from the record the user picks in this flow\n    - `vertraulichkeit`: the user enters it (bind it through the layer: form.field/…)\n    - `aufklaerungsstatus`: fixed value `neu` — set it in the plan step's values, never ask\n    - `qualitaetsstatus`: fixed value `nicht_geprueft` — set it in the plan step's values, never ask\n    - `freigabestatus`: fixed value `nicht_freigabefaehig` — set it in the plan step's values, never ask\n    - `prioritaet`: the user enters it (bind it through the layer: form.field/…)\n    - `wunschtermin`: the user enters it (bind it through the layer: form.field/…)\n- creates `quellen` (only when the flow needs it):\n    - `vorhaben`: from the record the user picks in this flow\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `quellentyp`: the user enters it (bind it through the layer: form.field/…)\n    - `datei`: the user enters it (bind it through the layer: form.field/…)\n    - `erfassungszeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `vertraulichkeit`: derived from the picked record's `vorhaben.vertraulichkeit` — never ask\n    - `pruefstatus`: fixed value `ungeprueft` — set it in the plan step's values, never ask\n    - `extraktionsstatus`: fixed value `nicht_extrahiert` — set it in the plan step's values, never ask\n\n## Reads\n- `mitarbeitende` columns vorname, nachname, rolle\n\n## Checks BEFORE the write (block the submit with the message when they fail)\n- unique (field=`vorhaben.vorhaben_nummer`) — message: „Diese Vorhaben-Nummer ist schon vergeben.“\n\n## Success page\n- shows: `vorhaben.titel`, `vorhaben.aufklaerungsstatus`\n- next flows to offer: `anforderung-erfassen`\n\n## Never write these — another flow or a tool owns them\n- `anforderungen.vorhaben` (owner: intent `anforderung-erfassen`)\n- `anforderungen.titel` (owner: intent `anforderung-erfassen`)\n- `anforderungen.beschreibung` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kategorie` (owner: intent `anforderung-erfassen`)\n- `anforderungen.anforderungsart` (owner: intent `anforderung-erfassen`)\n- `anforderungen.verbindlichkeit` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kritikalitaet` (owner: intent `anforderung-erfassen`)\n- `anforderungen.status` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quellenstelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_grundlage` (owner: intent `anforderung-erfassen`)\n- `anforderungen.pruefer` (owner: intent `anforderung-erfassen`)\n- `anforderungen.akzeptanzkriterium` (owner: intent `anforderung-erfassen`)\n- `anforderungen.version` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_bewertung` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetiger` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetigungszeitpunkt` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.aenderungsgrund` (owner: intent `anforderung-bestaetigen`)\n- `klaerungspunkte.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.fragestellung` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.anlass` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.kritikalitaet` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_anforderungen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_quellen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.adressat` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.titel` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.zweck` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.aufgabentyp` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.klaerungspunkt` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.erwartetes_ergebnis` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.pruefer` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.bestaetigte_antwort` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.antwortquelle` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.fachlicher_pruefer` (owner: intent `klaerungspunkt-abschliessen`)\n- `entscheidungen.vorhaben` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.fragestellung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.begruendung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.grundlagen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheider` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidungszeitpunkt` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.status` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.beruecksichtigte_erfahrungen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.ersetzte_entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.freigabe_erforderlich` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.version` (owner: intent `entscheidung-dokumentieren`)\n- `vorhaben.vorhaben_nummer` (owner: tool `vorhaben-nummer-vergeben`)\n- `aufgaben.abschlusszeitpunkt` (owner: tool `aufgabe-abschlusszeit-setzen`)\n- `risiken.risikoklasse` (owner: tool `risikoklasse-berechnen`)\n"
+    },
+    {
+      "slug": "anforderung-erfassen",
+      "label": {
+        "de": "Anforderung erfassen",
+        "en": "Record requirement"
+      },
+      "description": "Erfasst eine Anforderung mit Quellenbezug und Prüfer zu einem Vorhaben.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "anforderungen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "vorhaben": "picked",
+            "titel": "user",
+            "beschreibung": "user",
+            "kategorie": "user",
+            "anforderungsart": "user",
+            "verbindlichkeit": "user",
+            "kritikalitaet": "user",
+            "status": "fixed:vorgeschlagen",
+            "quelle": "picked",
+            "quellenstelle": "user",
+            "fachliche_grundlage": "user",
+            "pruefer": "picked",
+            "akzeptanzkriterium": "user",
+            "version": "fixed:1"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `anforderung-erfassen` — Anforderung erfassen\nErfasst eine Anforderung mit Quellenbezug und Prüfer zu einem Vorhaben.\n\n## Your hook — import it, never rebuild what it owns\n`import { useAnforderungErfassenFlow } from '@/lib/journey/flows/AnforderungErfassen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: vorhaben, quelle, pruefer), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Vorhaben wählen\n2. Quelle und Quellenstelle angeben\n3. Kategorie, Art und Kritikalität festlegen\n4. Prüfer wählen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `anforderungen`:\n    - `vorhaben`: from the record the user picks in this flow\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `beschreibung`: the user enters it (bind it through the layer: form.field/…)\n    - `kategorie`: the user enters it (bind it through the layer: form.field/…)\n    - `anforderungsart`: the user enters it (bind it through the layer: form.field/…)\n    - `verbindlichkeit`: the user enters it (bind it through the layer: form.field/…)\n    - `kritikalitaet`: the user enters it (bind it through the layer: form.field/…)\n    - `status`: fixed value `vorgeschlagen` — set it in the plan step's values, never ask\n    - `quelle`: from the record the user picks in this flow\n    - `quellenstelle`: the user enters it (bind it through the layer: form.field/…)\n    - `fachliche_grundlage`: the user enters it (bind it through the layer: form.field/…)\n    - `pruefer`: from the record the user picks in this flow\n    - `akzeptanzkriterium`: the user enters it (bind it through the layer: form.field/…)\n    - `version`: fixed value `1` — set it in the plan step's values, never ask\n\n## Reads\n- `vorhaben` columns vorhaben_nummer, titel, kunde\n- `quellen` columns titel, quellentyp, vorhaben\n\n## Success page\n- shows: `anforderungen.titel`, `anforderungen.status`\n- next flows to offer: `klaerungspunkt-aufgabe-anlegen`\n\n## Never write these — another flow or a tool owns them\n- `vorhaben.titel` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragebeschreibung` (owner: intent `anfrage-erfassen`)\n- `vorhaben.kunde` (owner: intent `anfrage-erfassen`)\n- `vorhaben.eingangsdatum` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragequelle` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsverantwortlicher` (owner: intent `anfrage-erfassen`)\n- `vorhaben.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.qualitaetsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.freigabestatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.prioritaet` (owner: intent `anfrage-erfassen`)\n- `vorhaben.wunschtermin` (owner: intent `anfrage-erfassen`)\n- `quellen.vorhaben` (owner: intent `anfrage-erfassen`)\n- `quellen.titel` (owner: intent `anfrage-erfassen`)\n- `quellen.quellentyp` (owner: intent `anfrage-erfassen`)\n- `quellen.datei` (owner: intent `anfrage-erfassen`)\n- `quellen.erfassungszeitpunkt` (owner: intent `anfrage-erfassen`)\n- `quellen.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `quellen.pruefstatus` (owner: intent `anfrage-erfassen`)\n- `quellen.extraktionsstatus` (owner: intent `anfrage-erfassen`)\n- `anforderungen.fachliche_bewertung` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetiger` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetigungszeitpunkt` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.aenderungsgrund` (owner: intent `anforderung-bestaetigen`)\n- `klaerungspunkte.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.fragestellung` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.anlass` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.kritikalitaet` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_anforderungen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_quellen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.adressat` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.titel` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.zweck` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.aufgabentyp` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.klaerungspunkt` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.erwartetes_ergebnis` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.pruefer` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.bestaetigte_antwort` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.antwortquelle` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.fachlicher_pruefer` (owner: intent `klaerungspunkt-abschliessen`)\n- `entscheidungen.vorhaben` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.fragestellung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.begruendung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.grundlagen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheider` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidungszeitpunkt` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.status` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.beruecksichtigte_erfahrungen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.ersetzte_entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.freigabe_erforderlich` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.version` (owner: intent `entscheidung-dokumentieren`)\n- `vorhaben.vorhaben_nummer` (owner: tool `vorhaben-nummer-vergeben`)\n- `aufgaben.abschlusszeitpunkt` (owner: tool `aufgabe-abschlusszeit-setzen`)\n- `risiken.risikoklasse` (owner: tool `risikoklasse-berechnen`)\n"
+    },
+    {
+      "slug": "anforderung-bestaetigen",
+      "label": {
+        "de": "Anforderung prüfen und bestätigen",
+        "en": "Review and confirm requirement"
+      },
+      "description": "Der Prüfer bewertet eine Anforderung und bestätigt sie oder fordert eine Rückfrage an.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "anforderungen",
+          "op": "update",
+          "when": "always",
+          "fields": {
+            "fachliche_bewertung": "user",
+            "status": "user",
+            "bestaetiger": "picked",
+            "bestaetigungszeitpunkt": "derived:now",
+            "aenderungsgrund": "user"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `anforderung-bestaetigen` — Anforderung prüfen und bestätigen\nDer Prüfer bewertet eine Anforderung und bestätigt sie oder fordert eine Rückfrage an.\n\n## Your hook — import it, never rebuild what it owns\n`import { useAnforderungBestaetigenFlow } from '@/lib/journey/flows/AnforderungBestaetigen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: bestaetiger), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. This flow CHANGES a record of `anforderungen`: `{...flow.picks.anforderungen.select} {...flow.pick('anforderungen')}` picks it, the hook prefills the form with its current values and updates THAT record — never a create step, never a list from useDashboardData. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Anforderung mit Quelle ansehen\n2. Fachliche Bewertung eintragen\n3. Bestätigen oder Rückfrage markieren\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- updates `anforderungen`:\n    - `fachliche_bewertung`: the user enters it (bind it through the layer: form.field/…)\n    - `status`: the user enters it (bind it through the layer: form.field/…)\n    - `bestaetiger`: from the record the user picks in this flow\n    - `bestaetigungszeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `aenderungsgrund`: the user enters it (bind it through the layer: form.field/…)\n\n## Reads\n- `anforderungen` columns titel, beschreibung, kritikalitaet, quelle, quellenstelle, status\n\n## Checks BEFORE the write (block the submit with the message when they fail)\n- required_context (field=`anforderungen.quelle`) — message: „Die Anforderung hat keinen Quellenbezug.“\n\n## Success page\n- shows: `anforderungen.status`\n- next flows to offer: `klaerungspunkt-aufgabe-anlegen`\n\n## Never write these — another flow or a tool owns them\n- `vorhaben.titel` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragebeschreibung` (owner: intent `anfrage-erfassen`)\n- `vorhaben.kunde` (owner: intent `anfrage-erfassen`)\n- `vorhaben.eingangsdatum` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragequelle` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsverantwortlicher` (owner: intent `anfrage-erfassen`)\n- `vorhaben.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.qualitaetsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.freigabestatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.prioritaet` (owner: intent `anfrage-erfassen`)\n- `vorhaben.wunschtermin` (owner: intent `anfrage-erfassen`)\n- `quellen.vorhaben` (owner: intent `anfrage-erfassen`)\n- `quellen.titel` (owner: intent `anfrage-erfassen`)\n- `quellen.quellentyp` (owner: intent `anfrage-erfassen`)\n- `quellen.datei` (owner: intent `anfrage-erfassen`)\n- `quellen.erfassungszeitpunkt` (owner: intent `anfrage-erfassen`)\n- `quellen.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `quellen.pruefstatus` (owner: intent `anfrage-erfassen`)\n- `quellen.extraktionsstatus` (owner: intent `anfrage-erfassen`)\n- `anforderungen.vorhaben` (owner: intent `anforderung-erfassen`)\n- `anforderungen.titel` (owner: intent `anforderung-erfassen`)\n- `anforderungen.beschreibung` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kategorie` (owner: intent `anforderung-erfassen`)\n- `anforderungen.anforderungsart` (owner: intent `anforderung-erfassen`)\n- `anforderungen.verbindlichkeit` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kritikalitaet` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quellenstelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_grundlage` (owner: intent `anforderung-erfassen`)\n- `anforderungen.pruefer` (owner: intent `anforderung-erfassen`)\n- `anforderungen.akzeptanzkriterium` (owner: intent `anforderung-erfassen`)\n- `anforderungen.version` (owner: intent `anforderung-erfassen`)\n- `klaerungspunkte.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.fragestellung` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.anlass` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.kritikalitaet` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_anforderungen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_quellen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.adressat` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.titel` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.zweck` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.aufgabentyp` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.klaerungspunkt` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.erwartetes_ergebnis` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.pruefer` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.bestaetigte_antwort` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.antwortquelle` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.fachlicher_pruefer` (owner: intent `klaerungspunkt-abschliessen`)\n- `entscheidungen.vorhaben` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.fragestellung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.begruendung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.grundlagen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheider` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidungszeitpunkt` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.status` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.beruecksichtigte_erfahrungen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.ersetzte_entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.freigabe_erforderlich` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.version` (owner: intent `entscheidung-dokumentieren`)\n- `vorhaben.vorhaben_nummer` (owner: tool `vorhaben-nummer-vergeben`)\n- `aufgaben.abschlusszeitpunkt` (owner: tool `aufgabe-abschlusszeit-setzen`)\n- `risiken.risikoklasse` (owner: tool `risikoklasse-berechnen`)\n"
+    },
+    {
+      "slug": "klaerungspunkt-aufgabe-anlegen",
+      "label": {
+        "de": "Klärungspunkt mit Aufgabe anlegen",
+        "en": "Create clarification with task"
+      },
+      "description": "Erfasst einen Klärungspunkt zu betroffenen Anforderungen und vergibt dazu direkt eine Aufgabe.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "klaerungspunkte",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "vorhaben": "picked",
+            "fragestellung": "user",
+            "anlass": "user",
+            "kritikalitaet": "user",
+            "verantwortlicher": "picked",
+            "status": "fixed:offen",
+            "betroffene_anforderungen": "picked",
+            "betroffene_quellen": "picked",
+            "adressat": "user",
+            "faelligkeit": "user"
+          },
+          "needs": {}
+        },
+        {
+          "entity": "aufgaben",
+          "op": "create",
+          "when": "optional",
+          "fields": {
+            "vorhaben": "picked",
+            "titel": "user",
+            "zweck": "user",
+            "aufgabentyp": "user",
+            "verantwortlicher": "picked",
+            "status": "fixed:bereit",
+            "klaerungspunkt": "picked",
+            "faelligkeit": "derived:from_pick:klaerungspunkte.faelligkeit",
+            "erwartetes_ergebnis": "user",
+            "pruefer": "picked"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `klaerungspunkt-aufgabe-anlegen` — Klärungspunkt mit Aufgabe anlegen\nErfasst einen Klärungspunkt zu betroffenen Anforderungen und vergibt dazu direkt eine Aufgabe.\n\n## Your hook — import it, never rebuild what it owns\n`import { useKlaerungspunktAufgabeAnlegenFlow } from '@/lib/journey/flows/KlaerungspunktAufgabeAnlegen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: vorhaben, verantwortlicher, betroffene_anforderungen, betroffene_quellen, vorhaben, verantwortlicher, klaerungspunkt, pruefer), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Vorhaben und betroffene Anforderungen wählen\n2. Fragestellung, Anlass und Kritikalität erfassen\n3. Verantwortlichen und Frist festlegen\n4. Aufgabe dazu anlegen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `klaerungspunkte`:\n    - `vorhaben`: from the record the user picks in this flow\n    - `fragestellung`: the user enters it (bind it through the layer: form.field/…)\n    - `anlass`: the user enters it (bind it through the layer: form.field/…)\n    - `kritikalitaet`: the user enters it (bind it through the layer: form.field/…)\n    - `verantwortlicher`: from the record the user picks in this flow\n    - `status`: fixed value `offen` — set it in the plan step's values, never ask\n    - `betroffene_anforderungen`: from the record the user picks in this flow\n    - `betroffene_quellen`: from the record the user picks in this flow\n    - `adressat`: the user enters it (bind it through the layer: form.field/…)\n    - `faelligkeit`: the user enters it (bind it through the layer: form.field/…)\n- creates `aufgaben` (only when the flow needs it):\n    - `vorhaben`: from the record the user picks in this flow\n    - `titel`: the user enters it (bind it through the layer: form.field/…)\n    - `zweck`: the user enters it (bind it through the layer: form.field/…)\n    - `aufgabentyp`: the user enters it (bind it through the layer: form.field/…)\n    - `verantwortlicher`: from the record the user picks in this flow\n    - `status`: fixed value `bereit` — set it in the plan step's values, never ask\n    - `klaerungspunkt`: from the record the user picks in this flow\n    - `faelligkeit`: derived from the picked record's `klaerungspunkte.faelligkeit` — never ask\n    - `erwartetes_ergebnis`: the user enters it (bind it through the layer: form.field/…)\n    - `pruefer`: from the record the user picks in this flow\n\n## Reads\n- `anforderungen` columns titel, status, kritikalitaet\n- `mitarbeitende` columns vorname, nachname, rolle\n\n## Success page\n- shows: `klaerungspunkte.fragestellung`, `aufgaben.titel`\n- next flows to offer: `klaerungspunkt-abschliessen`\n\n## Never write these — another flow or a tool owns them\n- `vorhaben.titel` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragebeschreibung` (owner: intent `anfrage-erfassen`)\n- `vorhaben.kunde` (owner: intent `anfrage-erfassen`)\n- `vorhaben.eingangsdatum` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragequelle` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsverantwortlicher` (owner: intent `anfrage-erfassen`)\n- `vorhaben.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.qualitaetsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.freigabestatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.prioritaet` (owner: intent `anfrage-erfassen`)\n- `vorhaben.wunschtermin` (owner: intent `anfrage-erfassen`)\n- `quellen.vorhaben` (owner: intent `anfrage-erfassen`)\n- `quellen.titel` (owner: intent `anfrage-erfassen`)\n- `quellen.quellentyp` (owner: intent `anfrage-erfassen`)\n- `quellen.datei` (owner: intent `anfrage-erfassen`)\n- `quellen.erfassungszeitpunkt` (owner: intent `anfrage-erfassen`)\n- `quellen.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `quellen.pruefstatus` (owner: intent `anfrage-erfassen`)\n- `quellen.extraktionsstatus` (owner: intent `anfrage-erfassen`)\n- `anforderungen.vorhaben` (owner: intent `anforderung-erfassen`)\n- `anforderungen.titel` (owner: intent `anforderung-erfassen`)\n- `anforderungen.beschreibung` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kategorie` (owner: intent `anforderung-erfassen`)\n- `anforderungen.anforderungsart` (owner: intent `anforderung-erfassen`)\n- `anforderungen.verbindlichkeit` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kritikalitaet` (owner: intent `anforderung-erfassen`)\n- `anforderungen.status` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quellenstelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_grundlage` (owner: intent `anforderung-erfassen`)\n- `anforderungen.pruefer` (owner: intent `anforderung-erfassen`)\n- `anforderungen.akzeptanzkriterium` (owner: intent `anforderung-erfassen`)\n- `anforderungen.version` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_bewertung` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetiger` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetigungszeitpunkt` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.aenderungsgrund` (owner: intent `anforderung-bestaetigen`)\n- `klaerungspunkte.bestaetigte_antwort` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.antwortquelle` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.fachlicher_pruefer` (owner: intent `klaerungspunkt-abschliessen`)\n- `entscheidungen.vorhaben` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.fragestellung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.begruendung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.grundlagen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheider` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidungszeitpunkt` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.status` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.beruecksichtigte_erfahrungen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.ersetzte_entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.freigabe_erforderlich` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.version` (owner: intent `entscheidung-dokumentieren`)\n- `vorhaben.vorhaben_nummer` (owner: tool `vorhaben-nummer-vergeben`)\n- `aufgaben.abschlusszeitpunkt` (owner: tool `aufgabe-abschlusszeit-setzen`)\n- `risiken.risikoklasse` (owner: tool `risikoklasse-berechnen`)\n"
+    },
+    {
+      "slug": "klaerungspunkt-abschliessen",
+      "label": {
+        "de": "Klärungspunkt beantworten und klären",
+        "en": "Answer and resolve clarification"
+      },
+      "description": "Trägt die Antwort samt Quelle ein und schließt den Klärungspunkt nach fachlicher Prüfung ab.",
+      "priority": "must",
+      "writes": [
+        {
+          "entity": "klaerungspunkte",
+          "op": "update",
+          "when": "always",
+          "fields": {
+            "bestaetigte_antwort": "user",
+            "antwortquelle": "picked",
+            "fachlicher_pruefer": "picked",
+            "status": "user"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `klaerungspunkt-abschliessen` — Klärungspunkt beantworten und klären\nTrägt die Antwort samt Quelle ein und schließt den Klärungspunkt nach fachlicher Prüfung ab.\n\n## Your hook — import it, never rebuild what it owns\n`import { useKlaerungspunktAbschliessenFlow } from '@/lib/journey/flows/KlaerungspunktAbschliessen';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: antwortquelle, fachlicher_pruefer), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. This flow CHANGES a record of `klaerungspunkte`: `{...flow.picks.klaerungspunkte.select} {...flow.pick('klaerungspunkte')}` picks it, the hook prefills the form with its current values and updates THAT record — never a create step, never a list from useDashboardData. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Offenen Klärungspunkt wählen\n2. Antwort und Antwortquelle erfassen\n3. Fachlichen Prüfer wählen\n4. Status auf geklärt setzen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- updates `klaerungspunkte`:\n    - `bestaetigte_antwort`: the user enters it (bind it through the layer: form.field/…)\n    - `antwortquelle`: from the record the user picks in this flow\n    - `fachlicher_pruefer`: from the record the user picks in this flow\n    - `status`: the user enters it (bind it through the layer: form.field/…)\n\n## Reads\n- `klaerungspunkte` columns fragestellung, kritikalitaet, status, faelligkeit, vorgeschlagene_antwort\n\n## Checks BEFORE the write (block the submit with the message when they fail)\n- required_context (field=`klaerungspunkte.fachlicher_pruefer`) — message: „Vor dem Abschluss muss ein fachlicher Prüfer gewählt sein.“\n\n## Success page\n- shows: `klaerungspunkte.status`\n- next flows to offer: `entscheidung-dokumentieren`\n\n## Never write these — another flow or a tool owns them\n- `vorhaben.titel` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragebeschreibung` (owner: intent `anfrage-erfassen`)\n- `vorhaben.kunde` (owner: intent `anfrage-erfassen`)\n- `vorhaben.eingangsdatum` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragequelle` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsverantwortlicher` (owner: intent `anfrage-erfassen`)\n- `vorhaben.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.qualitaetsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.freigabestatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.prioritaet` (owner: intent `anfrage-erfassen`)\n- `vorhaben.wunschtermin` (owner: intent `anfrage-erfassen`)\n- `quellen.vorhaben` (owner: intent `anfrage-erfassen`)\n- `quellen.titel` (owner: intent `anfrage-erfassen`)\n- `quellen.quellentyp` (owner: intent `anfrage-erfassen`)\n- `quellen.datei` (owner: intent `anfrage-erfassen`)\n- `quellen.erfassungszeitpunkt` (owner: intent `anfrage-erfassen`)\n- `quellen.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `quellen.pruefstatus` (owner: intent `anfrage-erfassen`)\n- `quellen.extraktionsstatus` (owner: intent `anfrage-erfassen`)\n- `anforderungen.vorhaben` (owner: intent `anforderung-erfassen`)\n- `anforderungen.titel` (owner: intent `anforderung-erfassen`)\n- `anforderungen.beschreibung` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kategorie` (owner: intent `anforderung-erfassen`)\n- `anforderungen.anforderungsart` (owner: intent `anforderung-erfassen`)\n- `anforderungen.verbindlichkeit` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kritikalitaet` (owner: intent `anforderung-erfassen`)\n- `anforderungen.status` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quellenstelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_grundlage` (owner: intent `anforderung-erfassen`)\n- `anforderungen.pruefer` (owner: intent `anforderung-erfassen`)\n- `anforderungen.akzeptanzkriterium` (owner: intent `anforderung-erfassen`)\n- `anforderungen.version` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_bewertung` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetiger` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetigungszeitpunkt` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.aenderungsgrund` (owner: intent `anforderung-bestaetigen`)\n- `klaerungspunkte.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.fragestellung` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.anlass` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.kritikalitaet` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_anforderungen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_quellen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.adressat` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.titel` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.zweck` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.aufgabentyp` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.klaerungspunkt` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.erwartetes_ergebnis` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.pruefer` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `entscheidungen.vorhaben` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.fragestellung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.begruendung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.grundlagen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheider` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.entscheidungszeitpunkt` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.status` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.beruecksichtigte_erfahrungen` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.ersetzte_entscheidung` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.freigabe_erforderlich` (owner: intent `entscheidung-dokumentieren`)\n- `entscheidungen.version` (owner: intent `entscheidung-dokumentieren`)\n- `vorhaben.vorhaben_nummer` (owner: tool `vorhaben-nummer-vergeben`)\n- `aufgaben.abschlusszeitpunkt` (owner: tool `aufgabe-abschlusszeit-setzen`)\n- `risiken.risikoklasse` (owner: tool `risikoklasse-berechnen`)\n"
+    },
+    {
+      "slug": "entscheidung-dokumentieren",
+      "label": {
+        "de": "Entscheidung dokumentieren",
+        "en": "Document decision"
+      },
+      "description": "Hält eine fachliche Entscheidung mit Begründung, Grundlagen und berücksichtigten Erfahrungen fest.",
+      "priority": "nice",
+      "writes": [
+        {
+          "entity": "entscheidungen",
+          "op": "create",
+          "when": "always",
+          "fields": {
+            "vorhaben": "picked",
+            "fragestellung": "user",
+            "entscheidung": "user",
+            "begruendung": "user",
+            "grundlagen": "user",
+            "entscheider": "picked",
+            "entscheidungszeitpunkt": "derived:now",
+            "status": "fixed:getroffen",
+            "beruecksichtigte_erfahrungen": "picked",
+            "ersetzte_entscheidung": "picked",
+            "freigabe_erforderlich": "user",
+            "version": "fixed:1"
+          },
+          "needs": {}
+        }
+      ],
+      "required": [],
+      "brief": "# Flow `entscheidung-dokumentieren` — Entscheidung dokumentieren\nHält eine fachliche Entscheidung mit Begründung, Grundlagen und berücksichtigten Erfahrungen fest.\n\n## Your hook — import it, never rebuild what it owns\n`import { useEntscheidungDokumentierenFlow } from '@/lib/journey/flows/EntscheidungDokumentieren';` — generated from the Schreibliste below. It OWNS the form(s), one record search per picked field (columns and filter from the plan) and the submit plan with every fixed and derived value. You compose: `flow.forms.<entity>` for <Bound>/<Field>, `{...flow.picks.<field>.select} {...flow.pick('<field>')}` (or `flow.pickMany` for a multi pick) for <EntitySelectStep>, `flow.validateStep(n)` in StepNav.onNext, `flow.submit` + `flow.formList` for SummaryStep/SuccessStep, `flow.reset()`; what the hook does not own reads through its door `flow.port` — availability `useOccupancy(flow.port, '<entity>', { resource })`, a count `useRecordCount(flow.port, …)` — never import servicePort next to the hook. Options: `steps` (field → step), `items` (how a hit reads, per pick: vorhaben, entscheider, beruecksichtigte_erfahrungen, ersetzte_entscheidung), `initial`, `messages`. The hook's docblock in .lane-context.md shows the exact call. Never import servicePort, useStepForm, useJourneySubmit, useRecordSearch or useDashboardData in this page — check-intents refuses a page that uses the hook and any of them.\n\n## Steps (in this order)\n1. Vorhaben und Fragestellung wählen\n2. Entscheidung, Begründung und Grundlagen erfassen\n3. Erfahrungen und ersetzte Entscheidung verknüpfen\n\n## Schreibliste — the ONLY writes this flow makes (the gate compares your plan steps with this list)\n- creates `entscheidungen`:\n    - `vorhaben`: from the record the user picks in this flow\n    - `fragestellung`: the user enters it (bind it through the layer: form.field/…)\n    - `entscheidung`: the user enters it (bind it through the layer: form.field/…)\n    - `begruendung`: the user enters it (bind it through the layer: form.field/…)\n    - `grundlagen`: the user enters it (bind it through the layer: form.field/…)\n    - `entscheider`: from the record the user picks in this flow\n    - `entscheidungszeitpunkt`: derived: now() — set it in the plan step, never ask\n    - `status`: fixed value `getroffen` — set it in the plan step's values, never ask\n    - `beruecksichtigte_erfahrungen`: from the record the user picks in this flow\n    - `ersetzte_entscheidung`: from the record the user picks in this flow\n    - `freigabe_erforderlich`: the user enters it (bind it through the layer: form.field/…)\n    - `version`: fixed value `1` — set it in the plan step's values, never ask\n\n## Reads\n- `erfahrungen` columns titel, erkenntnis, freigabestatus\n\n## Success page\n- shows: `entscheidungen.status`\n\n## Never write these — another flow or a tool owns them\n- `vorhaben.titel` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragebeschreibung` (owner: intent `anfrage-erfassen`)\n- `vorhaben.kunde` (owner: intent `anfrage-erfassen`)\n- `vorhaben.eingangsdatum` (owner: intent `anfrage-erfassen`)\n- `vorhaben.anfragequelle` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsverantwortlicher` (owner: intent `anfrage-erfassen`)\n- `vorhaben.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `vorhaben.aufklaerungsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.qualitaetsstatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.freigabestatus` (owner: intent `anfrage-erfassen`)\n- `vorhaben.prioritaet` (owner: intent `anfrage-erfassen`)\n- `vorhaben.wunschtermin` (owner: intent `anfrage-erfassen`)\n- `quellen.vorhaben` (owner: intent `anfrage-erfassen`)\n- `quellen.titel` (owner: intent `anfrage-erfassen`)\n- `quellen.quellentyp` (owner: intent `anfrage-erfassen`)\n- `quellen.datei` (owner: intent `anfrage-erfassen`)\n- `quellen.erfassungszeitpunkt` (owner: intent `anfrage-erfassen`)\n- `quellen.vertraulichkeit` (owner: intent `anfrage-erfassen`)\n- `quellen.pruefstatus` (owner: intent `anfrage-erfassen`)\n- `quellen.extraktionsstatus` (owner: intent `anfrage-erfassen`)\n- `anforderungen.vorhaben` (owner: intent `anforderung-erfassen`)\n- `anforderungen.titel` (owner: intent `anforderung-erfassen`)\n- `anforderungen.beschreibung` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kategorie` (owner: intent `anforderung-erfassen`)\n- `anforderungen.anforderungsart` (owner: intent `anforderung-erfassen`)\n- `anforderungen.verbindlichkeit` (owner: intent `anforderung-erfassen`)\n- `anforderungen.kritikalitaet` (owner: intent `anforderung-erfassen`)\n- `anforderungen.status` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.quellenstelle` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_grundlage` (owner: intent `anforderung-erfassen`)\n- `anforderungen.pruefer` (owner: intent `anforderung-erfassen`)\n- `anforderungen.akzeptanzkriterium` (owner: intent `anforderung-erfassen`)\n- `anforderungen.version` (owner: intent `anforderung-erfassen`)\n- `anforderungen.fachliche_bewertung` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetiger` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.bestaetigungszeitpunkt` (owner: intent `anforderung-bestaetigen`)\n- `anforderungen.aenderungsgrund` (owner: intent `anforderung-bestaetigen`)\n- `klaerungspunkte.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.fragestellung` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.anlass` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.kritikalitaet` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_anforderungen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.betroffene_quellen` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.adressat` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.vorhaben` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.titel` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.zweck` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.aufgabentyp` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.verantwortlicher` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.status` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.klaerungspunkt` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.faelligkeit` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.erwartetes_ergebnis` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `aufgaben.pruefer` (owner: intent `klaerungspunkt-aufgabe-anlegen`)\n- `klaerungspunkte.bestaetigte_antwort` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.antwortquelle` (owner: intent `klaerungspunkt-abschliessen`)\n- `klaerungspunkte.fachlicher_pruefer` (owner: intent `klaerungspunkt-abschliessen`)\n- `vorhaben.vorhaben_nummer` (owner: tool `vorhaben-nummer-vergeben`)\n- `aufgaben.abschlusszeitpunkt` (owner: tool `aufgabe-abschlusszeit-setzen`)\n- `risiken.risikoklasse` (owner: tool `risikoklasse-berechnen`)\n"
+    }
+  ],
+  "public_pages": [],
+  "tools": [
+    {
+      "id": "vorhaben-nummer-vergeben",
+      "purpose": "Vergibt bei jedem neuen Vorhaben eine fortlaufende Vorhaben-Nummer. Der Ablauf Anfrage erfassen lässt das Feld aus."
+    },
+    {
+      "id": "ueberfaellige-aufgaben-melden",
+      "purpose": "Sammelt alle Aufgaben, deren Fälligkeit vorbei ist und die nicht erledigt oder abgebrochen sind, und sendet eine Übersichtsmail an den Schlüsselinhaber."
+    },
+    {
+      "id": "aufgabe-abschlusszeit-setzen",
+      "purpose": "Setzt bei jeder Änderung einer Aufgabe den Abschlusszeitpunkt, wenn der Status auf erledigt steht und noch kein Zeitpunkt vorhanden ist. Prüft den Status im Code."
+    },
+    {
+      "id": "risikoklasse-berechnen",
+      "purpose": "Berechnet bei neuem oder geändertem Risiko die Risikoklasse aus Eintrittswahrscheinlichkeit und Auswirkung nach einer Bewertungsmatrix."
+    },
+    {
+      "id": "freigabe-anfrage-melden",
+      "purpose": "Sendet eine Sammelmail an den Schlüsselinhaber über Ergebnisdokumente mit Freigabestatus ausstehend."
+    }
+  ],
+  "covered_by_platform": [
+    {
+      "wish": "Daten durchsuchen, auch der Erfahrungsbestand",
+      "feature": "search_filter"
+    },
+    {
+      "wish": "Übersichten aller Datenobjekte",
+      "feature": "list_page"
+    },
+    {
+      "wish": "Nachvollziehbare Änderungen und Freigaben",
+      "feature": "record_history"
+    },
+    {
+      "wish": "Dokumente, Originalquellen und Anhänge zum Vorhaben",
+      "feature": "record_attachments"
+    },
+    {
+      "wish": "Rollen und Berechtigungen",
+      "feature": "user_roles"
+    },
+    {
+      "wish": "Einzelne Datensätze anlegen und bearbeiten",
+      "feature": "record_form"
+    },
+    {
+      "wish": "Auswertung nach Status und Verantwortlichem",
+      "feature": "distribution_view"
+    },
+    {
+      "wish": "Übergabe an nachgelagerte Systeme als Tabelle",
+      "feature": "csv_json_export"
+    }
+  ],
+  "ownership": {
+    "vorhaben": {
+      "titel": "intent:anfrage-erfassen",
+      "anfragebeschreibung": "intent:anfrage-erfassen",
+      "kunde": "intent:anfrage-erfassen",
+      "eingangsdatum": "intent:anfrage-erfassen",
+      "anfragequelle": "intent:anfrage-erfassen",
+      "aufklaerungsverantwortlicher": "intent:anfrage-erfassen",
+      "vertraulichkeit": "intent:anfrage-erfassen",
+      "aufklaerungsstatus": "intent:anfrage-erfassen",
+      "qualitaetsstatus": "intent:anfrage-erfassen",
+      "freigabestatus": "intent:anfrage-erfassen",
+      "prioritaet": "intent:anfrage-erfassen",
+      "wunschtermin": "intent:anfrage-erfassen",
+      "vorhaben_nummer": "tool:vorhaben-nummer-vergeben"
+    },
+    "quellen": {
+      "vorhaben": "intent:anfrage-erfassen",
+      "titel": "intent:anfrage-erfassen",
+      "quellentyp": "intent:anfrage-erfassen",
+      "datei": "intent:anfrage-erfassen",
+      "erfassungszeitpunkt": "intent:anfrage-erfassen",
+      "vertraulichkeit": "intent:anfrage-erfassen",
+      "pruefstatus": "intent:anfrage-erfassen",
+      "extraktionsstatus": "intent:anfrage-erfassen"
+    },
+    "anforderungen": {
+      "vorhaben": "intent:anforderung-erfassen",
+      "titel": "intent:anforderung-erfassen",
+      "beschreibung": "intent:anforderung-erfassen",
+      "kategorie": "intent:anforderung-erfassen",
+      "anforderungsart": "intent:anforderung-erfassen",
+      "verbindlichkeit": "intent:anforderung-erfassen",
+      "kritikalitaet": "intent:anforderung-erfassen",
+      "status": "intent:anforderung-bestaetigen",
+      "quelle": "intent:anforderung-erfassen",
+      "quellenstelle": "intent:anforderung-erfassen",
+      "fachliche_grundlage": "intent:anforderung-erfassen",
+      "pruefer": "intent:anforderung-erfassen",
+      "akzeptanzkriterium": "intent:anforderung-erfassen",
+      "version": "intent:anforderung-erfassen",
+      "fachliche_bewertung": "intent:anforderung-bestaetigen",
+      "bestaetiger": "intent:anforderung-bestaetigen",
+      "bestaetigungszeitpunkt": "intent:anforderung-bestaetigen",
+      "aenderungsgrund": "intent:anforderung-bestaetigen"
+    },
+    "klaerungspunkte": {
+      "vorhaben": "intent:klaerungspunkt-aufgabe-anlegen",
+      "fragestellung": "intent:klaerungspunkt-aufgabe-anlegen",
+      "anlass": "intent:klaerungspunkt-aufgabe-anlegen",
+      "kritikalitaet": "intent:klaerungspunkt-aufgabe-anlegen",
+      "verantwortlicher": "intent:klaerungspunkt-aufgabe-anlegen",
+      "status": "intent:klaerungspunkt-abschliessen",
+      "betroffene_anforderungen": "intent:klaerungspunkt-aufgabe-anlegen",
+      "betroffene_quellen": "intent:klaerungspunkt-aufgabe-anlegen",
+      "adressat": "intent:klaerungspunkt-aufgabe-anlegen",
+      "faelligkeit": "intent:klaerungspunkt-aufgabe-anlegen",
+      "bestaetigte_antwort": "intent:klaerungspunkt-abschliessen",
+      "antwortquelle": "intent:klaerungspunkt-abschliessen",
+      "fachlicher_pruefer": "intent:klaerungspunkt-abschliessen"
+    },
+    "aufgaben": {
+      "vorhaben": "intent:klaerungspunkt-aufgabe-anlegen",
+      "titel": "intent:klaerungspunkt-aufgabe-anlegen",
+      "zweck": "intent:klaerungspunkt-aufgabe-anlegen",
+      "aufgabentyp": "intent:klaerungspunkt-aufgabe-anlegen",
+      "verantwortlicher": "intent:klaerungspunkt-aufgabe-anlegen",
+      "status": "intent:klaerungspunkt-aufgabe-anlegen",
+      "klaerungspunkt": "intent:klaerungspunkt-aufgabe-anlegen",
+      "faelligkeit": "intent:klaerungspunkt-aufgabe-anlegen",
+      "erwartetes_ergebnis": "intent:klaerungspunkt-aufgabe-anlegen",
+      "pruefer": "intent:klaerungspunkt-aufgabe-anlegen",
+      "abschlusszeitpunkt": "tool:aufgabe-abschlusszeit-setzen"
+    },
+    "entscheidungen": {
+      "vorhaben": "intent:entscheidung-dokumentieren",
+      "fragestellung": "intent:entscheidung-dokumentieren",
+      "entscheidung": "intent:entscheidung-dokumentieren",
+      "begruendung": "intent:entscheidung-dokumentieren",
+      "grundlagen": "intent:entscheidung-dokumentieren",
+      "entscheider": "intent:entscheidung-dokumentieren",
+      "entscheidungszeitpunkt": "intent:entscheidung-dokumentieren",
+      "status": "intent:entscheidung-dokumentieren",
+      "beruecksichtigte_erfahrungen": "intent:entscheidung-dokumentieren",
+      "ersetzte_entscheidung": "intent:entscheidung-dokumentieren",
+      "freigabe_erforderlich": "intent:entscheidung-dokumentieren",
+      "version": "intent:entscheidung-dokumentieren"
+    },
+    "risiken": {
+      "risikoklasse": "tool:risikoklasse-berechnen"
+    }
+  },
+  "dashboard": {
+    "focus": [
+      "Aktive Vorhaben mit Arbeitsstatus",
+      "Offene kritische Klärungspunkte und Risiken",
+      "Überfällige Aufgaben",
+      "Ausstehende Freigaben bei Ergebnisdokumenten"
+    ],
+    "hints": [
+      "Eigene Aufgaben je Verantwortlichem hervorheben",
+      "Kritische Muss-Anforderungen ohne Bestätigung anzeigen",
+      "Vorhaben nach Priorität und internem Zieltermin sortieren"
+    ],
+    "writes": [],
+    "wishes": []
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "Mitarbeitende": {
+      "placeholders_set": 4,
+      "defaults_keys": [
+        "aktiv"
+      ],
+      "computed_keys": [],
+      "reason": "Reine Stammdaten ohne numerische Felder, daher keine Formeln; aktiv ist standardmäßig true."
+    },
+    "Vorhaben": {
+      "placeholders_set": 15,
+      "defaults_keys": [
+        "eingangsdatum",
+        "aufklaerungsstatus",
+        "qualitaetsstatus",
+        "prioritaet"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da das Formular keine numerischen Felder oder Preise enthält und die Datumsfelder kein Paar für eine Dauer bilden."
+    },
+    "Quellen": {
+      "placeholders_set": 9,
+      "defaults_keys": [
+        "erfassungszeitpunkt",
+        "extraktionsstatus",
+        "pruefstatus"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da die Quellen reine Stammdaten ohne numerische Felder oder Datumspaare sind."
+    },
+    "Anforderungen": {
+      "placeholders_set": 15,
+      "defaults_keys": [
+        "status",
+        "version"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da es nur Stammdaten und Textfelder ohne numerische Berechnungskette gibt."
+    },
+    "Klärungspunkte": {
+      "placeholders_set": 12,
+      "defaults_keys": [
+        "status",
+        "faelligkeit"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da keine Datumspaare oder Preis- und Mengenfelder vorhanden sind und die einzige numerische Zielspalte (Version) keine Berechnung ergibt."
+    },
+    "Risiken": {
+      "placeholders_set": 11,
+      "defaults_keys": [
+        "status",
+        "faelligkeit"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formel, da die Risikoklasse eine Fallunterscheidung aus Wahrscheinlichkeit und Auswirkung erfordert und keine numerischen Felder vorhanden sind."
+    },
+    "Aufgaben": {
+      "placeholders_set": 16,
+      "defaults_keys": [
+        "status",
+        "faelligkeit"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da es keine Zahlen- oder Datumspaare gibt und die einzige numerische Spalte (Version) kein Preis oder Betrag ist."
+    },
+    "Entscheidungen": {
+      "placeholders_set": 14,
+      "defaults_keys": [
+        "entscheidungszeitpunkt",
+        "status",
+        "version"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da es keine Datumspaare oder Preis-/Mengenfelder gibt und die Version nur ein Zähler ist."
+    },
+    "Kommunikation": {
+      "placeholders_set": 12,
+      "defaults_keys": [
+        "status",
+        "zeitpunkt"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da keine Datumspaare oder Preis-/Mengenfelder vorhanden sind und die Version der Anforderung keine Berechnung ergibt."
+    },
+    "Erfahrungen": {
+      "placeholders_set": 20,
+      "defaults_keys": [
+        "pruefstatus",
+        "freigabestatus",
+        "version"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da es nur Textfelder und eine Versionsnummer ohne Zahlenkette oder Datumspaar gibt."
+    },
+    "Ergebnisdokumente": {
+      "placeholders_set": 9,
+      "defaults_keys": [
+        "version",
+        "erstellungszeitpunkt",
+        "pruefstatus",
+        "freigabestatus"
+      ],
+      "computed_keys": [],
+      "reason": "Keine Formeln, da es sich um Dokumentenstammdaten ohne Mengen- oder Preisberechnung handelt und die Vorgängerversion nur eine Referenz ist."
+    }
+  }
+}

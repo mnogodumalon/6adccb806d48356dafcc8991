@@ -1,0 +1,750 @@
+Anwendung „Technische Auftragsklärung“
+
+Anwendungsspezifikation
+
+Ziel: Eine produktiv nutzbare KLAR-Anwendung, die technische Aufträge von der ursprünglichen Anfrage bis zum geprüften und freigegebenen Ergebnis durchgängig bearbeitbar macht.
+
+1. Zweck und Ergebnis
+
+Die Anwendung unterstützt die technische Aufklärung industrieller Kundenanfragen.
+
+Sie führt Informationen aus Anfragen, Dokumenten, Gesprächen und früheren Vorhaben zusammen. Sie macht Anforderungen, Unklarheiten, Widersprüche, Aufgaben, Risiken und Entscheidungen nachvollziehbar. Sie koordiniert die erforderlichen Beiträge und erzeugt ein freigegebenes Ergebnis.
+
+Die Anwendung muss jederzeit beantworten können:
+
+* Was soll für den Kunden erreicht werden?
+* Welche Anforderungen sind belegt und fachlich bestätigt?
+* Welche Punkte sind ungeklärt oder widersprüchlich?
+* Wer muss was bis wann bearbeiten?
+* Welche Entscheidungen wurden mit welcher Begründung getroffen?
+* Welche kritischen Punkte verhindern die Freigabe?
+* Welche früheren Erfahrungen sind für den aktuellen Fall relevant?
+* Welcher fachliche Stand ist freigegeben?
+
+Grundprinzip: Menschen bearbeiten ihre konkrete Aufgabe im Kontext des Vorhabens. KLAR stellt ihnen dafür die relevanten Informationen, zulässigen Handlungen und passende KI-Unterstützung bereit.
+
+2. Umfang der ersten Version
+
+Die erste Version muss einen vollständigen Aufklärungsfall durchgängig unterstützen:
+
+1. Anfrage erfassen.
+2. Quellen zuordnen.
+3. Anforderungen herausarbeiten und prüfen.
+4. Unklarheiten und Widersprüche erfassen.
+5. Aufgaben an Verantwortliche vergeben.
+6. Rückfragen und fachliche Entscheidungen dokumentieren.
+7. Qualität und Freigabefähigkeit prüfen.
+8. Ergebnisdokument erzeugen und freigeben.
+9. Relevante Erfahrungen für spätere Vorhaben sichern.
+
+Der erste Aufbau umfasst:
+
+* strukturierte Datenhaltung;
+* grundlegende Rollen- und Berechtigungsprüfung;
+* regelgebundene Zustandswechsel;
+* zentrale Intent-UIs;
+* KI-gestützte Dokumentanalyse und Vorschläge;
+* nachvollziehbare Quellenbezüge;
+* einfache Aufgabensteuerung und Benachrichtigungen;
+* versionierte Ergebnisdokumente;
+* einen grundlegenden, durchsuchbaren Erfahrungsbestand.
+
+3. Zentrale Datenobjekte
+
+Alle Datenobjekte besitzen eine stabile ID, Erstellungszeitpunkt, Ersteller und Änderungsinformationen. Fachlich relevante Änderungen und Freigaben müssen nachvollziehbar bleiben.
+
+3.0 Mitarbeitende 
+
+Mitarbeitende Personen sind als eigenes Modul mit den üblichen Feldern umzusetzen.
+
+Alle anderen Module müssen sich dann darauf beziehen.
+
+3.1 Vorhaben
+
+Das Vorhaben ist der zentrale Bezugspunkt der Auftragsklärung.
+
+Pflichtfelder:
+
+* Vorhaben-ID;
+* Vorhaben-Nummer;
+* Titel;
+* Beschreibung der Anfrage;
+* Kunde;
+* Eingangsdatum;
+* Anfragequelle;
+* Aufklärungsverantwortlicher;
+* Aufklärungsstatus;
+* Vertraulichkeitsstufe.
+
+Optionale Felder:
+
+* Kundenkontakt;
+* Produkt oder Produktgruppe;
+* Kundenreferenz;
+* interner Zieltermin;
+* gewünschter Liefer- oder Antworttermin;
+* technischer Hauptverantwortlicher;
+* Priorität;
+* interne ERP- oder CRM-Referenz.
+
+Das Vorhaben verknüpft Quellen, Anforderungen, Klärungspunkte, Aufgaben, Entscheidungen, Risiken, Kommunikation, Ergebnisversionen und Erfahrungen.
+
+3.2 Quelle
+
+Eine Quelle ist ein Dokument, eine E-Mail, eine Gesprächsnotiz, ein strukturierter Datensatz oder ein anderer Informationsursprung.
+
+Pflichtfelder:
+
+* Quellen-ID;
+* Vorhaben;
+* Titel;
+* Quellentyp;
+* Datei oder eindeutige externe Referenz;
+* Eingangs- beziehungsweise Erfassungszeitpunkt;
+* Vertraulichkeitsstufe.
+
+Zusätzliche Felder, soweit verfügbar:
+
+* Urheber oder Absender;
+* Dokumentdatum;
+* Version;
+* extrahierter Inhalt;
+* Extraktionsstatus;
+* Prüfstatus;
+* Inhaltshash.
+
+Originalquellen bleiben von extrahierten Inhalten unterscheidbar. Originaldateien werden nicht durch KI-generierte Fassungen ersetzt.
+
+Jede aus einer Quelle abgeleitete Anforderung verweist auf die Quelle und, soweit verfügbar, auf die konkrete Textstelle oder den relevanten Dokumentbereich.
+
+3.3 Anforderung
+
+Eine Anforderung beschreibt, was der Kunde oder die technische Lösung erfüllen muss beziehungsweise welche Randbedingung gilt.
+
+Pflichtfelder:
+
+* Anforderungs-ID;
+* Vorhaben;
+* Titel;
+* Beschreibung;
+* Kategorie;
+* Anforderungsart;
+* Verbindlichkeit;
+* Kritikalität;
+* Status;
+* Quelle oder dokumentierte fachliche Grundlage;
+* verantwortlicher Prüfer, soweit eine fachliche Prüfung erforderlich ist.
+
+Weitere Felder, soweit relevant:
+
+* Quellenstelle;
+* Akzeptanzkriterium;
+* Nachweisverfahren;
+* betroffene Risiken;
+* zugehörige Aufgaben;
+* fachliche Bewertung;
+* Bestätiger und Bestätigungszeitpunkt;
+* Version;
+* Änderungsgrund.
+
+Die Kategorien umfassen mindestens Funktion, Leistung, Schnittstellen, Mechanik, Elektrik, Software, Materialien, Umweltbedingungen, Sicherheit, Normen, Qualität, Wartung, Dokumentation, Lieferumfang, Termine und Wirtschaftlichkeit. Kategorien sind administrativ erweiterbar.
+
+Die Anforderungsarten umfassen Muss, Soll, optional, Randbedingung und Abnahmekriterium. Annahmen und offene Fragen werden als eigene fachliche Sachverhalte geführt und nicht mit bestätigten Anforderungen gleichgesetzt.
+
+Mögliche Statuswerte:
+
+* Vorgeschlagen;
+* In Prüfung;
+* Rückfrage erforderlich;
+* Bestätigt;
+* Abgelehnt;
+* Ersetzt;
+* Nicht anwendbar.
+
+Eine bestätigte Anforderung wird bei einer relevanten Änderung versioniert. Der frühere Stand bleibt nachvollziehbar.
+
+3.4 Klärungspunkt
+
+Ein Klärungspunkt beschreibt eine konkrete Informationslücke, einen Widerspruch oder eine offene fachliche Frage.
+
+Pflichtfelder:
+
+* Klärungspunkt-ID;
+* Vorhaben;
+* Fragestellung;
+* Anlass;
+* Kritikalität;
+* Verantwortlicher;
+* Status.
+
+Optionale Felder:
+
+* betroffene Anforderungen;
+* betroffene Quellen;
+* Adressat;
+* Fälligkeit;
+* vorgeschlagene Antwort;
+* bestätigte Antwort;
+* Antwortquelle;
+* fachlicher Prüfer.
+
+Statuswerte:
+
+* Offen;
+* In Bearbeitung;
+* Rückfrage vorbereitet;
+* Rückfrage versendet;
+* Antwort eingegangen;
+* Fachliche Prüfung;
+* Geklärt;
+* Nicht mehr relevant.
+
+Eine eingegangene Antwort gilt erst als geklärt, wenn die erforderliche fachliche Prüfung abgeschlossen ist.
+
+3.5 Aufgabe
+
+Eine Aufgabe beschreibt einen konkreten erforderlichen Beitrag.
+
+Pflichtfelder:
+
+* Aufgaben-ID;
+* Vorhaben;
+* Titel;
+* Zweck und Beschreibung;
+* Aufgabentyp;
+* Verantwortlicher;
+* Status.
+
+Weitere Felder:
+
+* zugehörige Anforderungen oder Klärungspunkte;
+* unterstützende Personen;
+* Fälligkeit;
+* Abhängigkeiten;
+* erwartetes Ergebnis;
+* Akzeptanzkriterien;
+* Prüfer;
+* Ergebnisreferenz;
+* Abschlusszeitpunkt.
+
+Statuswerte:
+
+* Geplant;
+* Bereit;
+* In Bearbeitung;
+* Wartet auf Information;
+* Wartet auf andere Aufgabe;
+* Zur Prüfung;
+* Korrektur erforderlich;
+* Erledigt;
+* Abgebrochen.
+
+Eine Aufgabe mit definierten Akzeptanzkriterien ist erst abgeschlossen, wenn das erwartete Ergebnis vorliegt und die erforderliche Prüfung bestanden ist.
+
+3.6 Entscheidung
+
+Eine Entscheidung dokumentiert eine verbindliche fachliche Festlegung.
+
+Pflichtfelder:
+
+* Entscheidungs-ID;
+* Vorhaben;
+* Fragestellung;
+* Entscheidung;
+* Begründung;
+* zugrunde liegende Informationen;
+* Entscheider;
+* Entscheidungszeitpunkt;
+* Status.
+
+Weitere Felder:
+
+* Optionen;
+* berücksichtigte Erfahrungen;
+* Annahmen;
+* Risiken;
+* Gültigkeitsbedingungen;
+* erforderliche Freigabe;
+* Version;
+* gegebenenfalls ersetzte Entscheidung.
+
+Eine Empfehlung, eine getroffene Entscheidung und eine freigegebene Entscheidung sind unterscheidbare Zustände. Welche Entscheidungen zusätzlich freigegeben werden müssen, wird durch fachliche Regeln bestimmt.
+
+3.7 Risiko
+
+Ein Risiko beschreibt eine mögliche negative Auswirkung auf die technische Lösung oder die Auftragsabwicklung.
+
+Pflichtfelder:
+
+* Risiko-ID;
+* Vorhaben;
+* Titel;
+* Beschreibung;
+* Eintrittswahrscheinlichkeit;
+* Auswirkung;
+* berechnete Risikoklasse;
+* Status.
+
+Optionale Felder:
+
+* Ursache;
+* betroffene Anforderungen;
+* Belege;
+* Maßnahmen;
+* Maßnahmenverantwortlicher;
+* Fälligkeit;
+* Restrisiko;
+* erforderliche Freigabe.
+
+Die Risikoklasse wird nach einer konfigurierten Bewertungsmatrix berechnet. Ein kritisches Risiko verhindert die reguläre Freigabe, bis es gemäß den festgelegten Regeln behandelt wurde.
+
+3.8 Kommunikation
+
+Kommunikation verbindet einen fachlichen Sachverhalt mit einer internen Abstimmung oder einer externen Nachricht.
+
+Pflichtfelder:
+
+* Kommunikations-ID;
+* Vorhaben;
+* Kanal;
+* Betreff;
+* Inhalt;
+* Absender;
+* Status.
+
+Optionale Felder:
+
+* Empfänger;
+* zugehörige Aufgabe;
+* zugehöriger Klärungspunkt;
+* zugehörige Anforderung;
+* Versand- und Eingangszeitpunkt;
+* Bestätigung;
+* Quellenreferenz.
+
+Interne Notizen, KI-Vorschläge und externe Kommunikation müssen eindeutig unterscheidbar sein.
+
+Kundenkommunikation wird standardmäßig durch einen berechtigten Mitarbeiter freigegeben, bevor sie versendet wird.
+
+3.9 Erfahrung
+
+Eine Erfahrung hält fest, was in einer konkreten Situation beobachtet wurde, welche Erkenntnis daraus gewonnen wurde und unter welchen Bedingungen sie für spätere Vorhaben nützlich sein kann.
+
+Pflichtfelder:
+
+* Erfahrungs-ID;
+* Titel;
+* Ursprungsvorhaben;
+* Ausgangssituation;
+* beobachtetes Problem oder Ereignis;
+* Belege;
+* durchgeführte Maßnahme, soweit vorhanden;
+* beobachtetes Ergebnis;
+* übertragbare Erkenntnis;
+* Gültigkeitsbedingungen;
+* Grenzen der Übertragbarkeit;
+* Prüfstatus;
+* Freigabestatus;
+* fachlicher Prüfer, soweit erforderlich.
+
+Optionale Felder:
+
+* betroffene Anforderungen;
+* betroffene Entscheidungen;
+* Risiken;
+* technische Lösungen;
+* alternative Erklärungen;
+* Wirkungsmessung;
+* Version;
+* nächster Prüftermin.
+
+Statuswerte:
+
+* Entwurf;
+* Zur Prüfung;
+* Freigegeben;
+* Eingeschränkt freigegeben;
+* Abgelehnt;
+* Veraltet;
+* Erneute Prüfung erforderlich.
+
+Nur freigegebene oder eingeschränkt freigegebene Erfahrungen werden standardmäßig als belastbare Grundlage für Empfehlungen verwendet.
+
+Eine einzelne Beobachtung darf wertvoll sein, ohne bereits eine allgemein gültige Regel zu begründen.
+
+3.10 Ergebnisdokument
+
+Ein Ergebnisdokument repräsentiert einen bestimmten fachlichen Datenstand.
+
+Pflichtfelder:
+
+* Dokument-ID;
+* Vorhaben;
+* Dokumenttyp;
+* Version;
+* Erstellungszeitpunkt;
+* referenzierter Datenstand;
+* Inhalt;
+* Prüfstatus;
+* Freigabestatus.
+
+Zusätzliche Felder:
+
+* PDF-Datei;
+* Freigeber;
+* Freigabezeitpunkt;
+* Vorgängerversion;
+* Änderungszusammenfassung.
+
+Freigegebene Dokumente bleiben unverändert. Änderungen an relevanten Quelldaten können eine neue Prüfung und Dokumentversion erforderlich machen.
+
+4. Arbeitsablauf
+
+Schritt 1: Anfrage erfassen
+
+Der Benutzer legt ein Vorhaben an und fügt die ursprüngliche Anfrage sowie verfügbare Dokumente hinzu.
+
+KLAR zeigt erkannte Informationen und schlägt fehlende Pflichtangaben sowie mögliche Kunden- und Produktzuordnungen vor.
+
+Der Benutzer bestätigt oder korrigiert die Vorschläge.
+
+Ergebnis: Ein eindeutig identifizierbares Vorhaben mit nachvollziehbaren Ausgangsquellen.
+
+Schritt 2: Anfrage einordnen
+
+Der Aufklärungsverantwortliche bestimmt Aufklärungstyp, technische Bereiche, erforderliche Beteiligte und relevante Anforderungskategorien.
+
+KLAR darf Einstufungen vorschlagen. Verbindliche Festlegungen erfolgen durch die zuständige Person oder nach ausdrücklich definierten Regeln.
+
+Ergebnis: Ein abgestimmter Ausgangspunkt für die fachliche Bearbeitung.
+
+Schritt 3: Anforderungen herausarbeiten
+
+KLAR analysiert verfügbare Quellen und erzeugt strukturierte Anforderungsvorschläge.
+
+Jeder Vorschlag enthält die Aussage, den Quellenbezug, die vorgeschlagene Kategorie und erkennbare Unsicherheiten.
+
+Der Benutzer kann Vorschläge übernehmen, ändern, zusammenführen, aufteilen, zurückweisen oder zur Klärung markieren.
+
+Widersprüche werden als eigenständige Klärungspunkte sichtbar gemacht. Sie dürfen nicht durch stillschweigende Auswahl einer Quelle verschwinden.
+
+Ergebnis: Ein fachlich geprüfter Anforderungskatalog.
+
+Schritt 4: Relevante Erfahrungen finden
+
+KLAR sucht im freigegebenen Erfahrungsbestand nach vergleichbaren Situationen.
+
+Die Suche berücksichtigt verfügbare fachliche Merkmale, technische Randbedingungen, Gültigkeitsbedingungen, Aktualität und Freigabestatus. Semantische Ähnlichkeit dient zur Kandidatensuche und ist allein kein Nachweis fachlicher Vergleichbarkeit.
+
+Jeder Treffer zeigt:
+
+* die relevante frühere Situation;
+* die gewonnene Erkenntnis;
+* ihre Belege;
+* ihre Gültigkeitsbedingungen;
+* bekannte Einschränkungen;
+* gegebenenfalls widersprechende Erfahrungen;
+* eine mögliche Handlung für das aktuelle Vorhaben.
+
+Der Benutzer entscheidet, ob die Erfahrung anwendbar ist.
+
+Ergebnis: Nachvollziehbar geprüfte Anknüpfungspunkte an frühere Vorhaben.
+
+Schritt 5: Klärungsbedarf bestimmen
+
+KLAR stellt offene Pflichtinformationen, widersprüchliche Anforderungen, ungeklärte Machbarkeit, offene Entscheidungen, kritische Risiken und fehlende Nachweise zusammen.
+
+Jeder relevante Punkt erhält einen Verantwortlichen und bei Bedarf eine Frist.
+
+Die Anwendung priorisiert nach fachlicher Kritikalität und Auswirkungen auf die weitere Bearbeitung.
+
+Ergebnis: Ein priorisierter Klärungsplan.
+
+Schritt 6: Beiträge koordinieren
+
+KLAR erstellt Aufgaben aus den Klärungspunkten und den festgelegten Regeln.
+
+Jede Aufgabe besitzt einen Zweck, einen Verantwortlichen und ein erwartetes Ergebnis. Abhängigkeiten werden berücksichtigt; unabhängige Aufgaben können parallel bearbeitet werden.
+
+Mitarbeiter erhalten eine persönliche Arbeitsansicht mit ihrer konkreten Aufgabe, dem relevanten Kontext, Quellen, bisherigen Erkenntnissen, erwarteten Ergebnissen und zulässigen Handlungen.
+
+Ergebnis: Die erforderlichen Beiträge werden nachvollziehbar koordiniert.
+
+Schritt 7: Fachliche Klärung und Entscheidung
+
+Beteiligte bearbeiten ihre Aufgaben und dokumentieren ihre Ergebnisse.
+
+KLAR unterstützt bei Bedarf durch Quellenvergleich, Widerspruchsanalyse, Vorbereitung von Rückfragen und Entscheidungsvorlagen.
+
+Eine Entscheidungsvorlage zeigt die Fragestellung, bekannte Tatsachen, offene Annahmen, Optionen, Risiken, relevante Erfahrungen und erwartete Auswirkungen.
+
+Verbindliche Entscheidungen werden von den zuständigen Personen getroffen.
+
+Ergebnis: Dokumentierte fachliche Klärungen und nachvollziehbare Entscheidungen.
+
+Schritt 8: Qualität prüfen
+
+KLAR führt die definierten Prüfregeln aus.
+
+Mindestens geprüft werden:
+
+* kritische Muss-Anforderungen;
+* offene kritische Klärungspunkte;
+* erforderliche Entscheidungen;
+* kritische Risiken;
+* vorgeschriebene Nachweise;
+* Quellenbezüge;
+* notwendige Prüfungen;
+* erforderliche Freigaben;
+* Konsistenz des Ergebnisdokuments.
+
+Deterministisch prüfbare Bedingungen werden durch die Anwendungslogik kontrolliert. KI-gestützte Prüfungen liefern zusätzliche Hinweise, ersetzen aber keine erforderliche fachliche Freigabe.
+
+Ergebnis: Ein dokumentierter Prüfstand mit bestandenen Prüfungen, Warnungen und blockierenden Punkten.
+
+Schritt 9: Ergebnis erstellen und freigeben
+
+KLAR erzeugt aus den strukturierten Daten ein versioniertes Ergebnisdokument.
+
+Es enthält mindestens:
+
+1. Auftrag und Kundenreferenz;
+2. Gegenstand der Anfrage;
+3. bestätigte Anforderungen;
+4. technische Randbedingungen;
+5. getroffene Entscheidungen;
+6. offene, ausgeschlossene oder angenommene Punkte;
+7. Risiken und Maßnahmen;
+8. erforderliche Prüfungen und Nachweise;
+9. Quellenreferenzen;
+10. Freigabestatus, Verantwortlichkeiten und Versionsinformationen.
+
+Der Freigabeverantwortliche prüft das Dokument und erteilt die Freigabe oder fordert Korrekturen an.
+
+Ergebnis: Ein freigegebener, eindeutig versionierter fachlicher Stand.
+
+Schritt 10: Erfahrungen sichern
+
+Nach Abschluss schlägt KLAR Erfahrungen vor, die aus dem Vorhaben hervorgehen könnten.
+
+Der Vorschlag muss Ausgangssituation, Belege, Maßnahme, Ergebnis, Erkenntnis und Grenzen der Übertragbarkeit unterscheiden.
+
+Ein fachlich berechtigter Mensch prüft den Vorschlag. Freigegebene Erfahrungen stehen späteren Vorhaben zur Verfügung.
+
+Ergebnis: Ein kontrolliert erweiterter Erfahrungsbestand.
+
+5. Status- und Freigabelogik
+
+5.1 Vorhabenstatus
+
+Das Vorhaben verwendet folgende Arbeitsstatus:
+
+* Neu;
+* In Triage;
+* In Aufklärung;
+* Wartet auf Beitrag oder Information;
+* In Prüfung;
+* Freigabe ausstehend;
+* Freigegeben;
+* Abgeschlossen;
+* Zurückgestellt;
+* Abgebrochen.
+
+Der Status beschreibt den aktuellen Arbeitszustand. Er ersetzt nicht den Qualitäts- oder Freigabestatus.
+
+5.2 Qualitätsstatus
+
+Der Qualitätsstatus wird aus den tatsächlich ausgeführten Prüfungen ermittelt:
+
+* Nicht geprüft;
+* Prüfung bestanden;
+* Prüfung mit Warnungen bestanden;
+* Prüfung fehlgeschlagen.
+
+5.3 Freigabestatus
+
+Der Freigabestatus lautet:
+
+* Nicht freigabefähig;
+* Freigabeprüfung möglich;
+* Freigabe ausstehend;
+* Freigegeben.
+
+5.4 Verbindliche Freigaberegel
+
+Die reguläre Freigabe ist nur möglich, wenn:
+
+* alle erforderlichen kritischen Muss-Anforderungen geklärt sind;
+* keine ungeklärten kritischen Widersprüche bestehen;
+* vorgeschriebene Entscheidungen vorliegen;
+* kritische Risiken gemäß den geltenden Regeln behandelt wurden;
+* erforderliche Nachweise vorliegen;
+* alle Pflichtprüfungen bestanden sind;
+* die erforderlichen Freigaben erteilt wurden.
+
+Abweichungen sind nur über einen ausdrücklich definierten, berechtigungsgebundenen Ausnahmeprozess zulässig. Die Ausnahme muss Begründung, Umfang, Entscheider und Zeitpunkt dokumentieren.
+
+6. Intent-UIs
+
+Die Anwendung bietet aufgabenbezogene Einstiegspunkte. Jeder Einstieg zeigt nur den Kontext und die Handlungen, die für die konkrete Arbeitssituation erforderlich sind. Weitere Informationen bleiben erreichbar.
+
+Mindestens folgende Intent-UIs werden umgesetzt:
+
+Anfrage aufklären: Anfrage, erkannte Informationen, fehlende Angaben und nächste Schritte.
+
+Anforderungen prüfen: Anforderungsvorschläge, Quellenstellen, Unsicherheiten, Widersprüche und Prüfmöglichkeiten.
+
+Klärungspunkt bearbeiten: Fragestellung, betroffene Anforderungen, Ansprechpartner, Frist, bisherige Antworten und Abschlusskriterien.
+
+Meine Aufgabe bearbeiten: Zweck, Kontext, Quellen, erwartetes Ergebnis, Frist und zulässige Aktionen.
+
+Erfahrungen prüfen: passende Erfahrungen, Belege, Gültigkeitsbedingungen, Einschränkungen und mögliche Handlungen.
+
+Entscheidung vorbereiten: Fragestellung, Optionen, Tatsachen, Annahmen, Risiken, Erfahrungen und Auswirkungen.
+
+Auftragsklärung prüfen: bestandene Prüfungen, Warnungen, blockierende Punkte und erforderliche Korrekturen.
+
+Ergebnis freigeben: vollständiges Dokument, Datenstand, Prüfstatus und offene Freigabebedingungen.
+
+Erfahrung bewerten: Erfahrungsvorschlag, Belege, Ergebnis, Übertragbarkeit und Grenzen.
+
+Ein Mitarbeiter muss für seinen Beitrag nicht das gesamte Anwendungssystem oder sämtliche Datenmodule kennen.
+
+7. KI-Funktionen
+
+KI-Funktionen liefern strukturierte Vorschläge, keine eigenmächtig verbindlichen fachlichen Festlegungen.
+
+7.1 Dokumentanalyse
+
+Extrahiert Informationen und schlägt Anforderungen, offene Fragen und mögliche Widersprüche vor.
+
+Jede abgeleitete Aussage wird als Vorschlag gekennzeichnet und mit verfügbaren Quellenstellen verbunden.
+
+7.2 Anforderungsanalyse
+
+Ordnet Vorschläge fachlichen Kategorien zu und macht Unsicherheiten, fehlende Angaben und mögliche Konflikte sichtbar.
+
+7.3 Konsistenzprüfung
+
+Untersucht Dokumente und strukturierte Daten auf Widersprüche, fehlende Akzeptanzkriterien, Einheitenkonflikte und Abweichungen zwischen Versionen.
+
+7.4 Rückfragevorbereitung
+
+Erzeugt konkrete, verständliche Rückfragen, die auf eine identifizierte Informationslücke ausgerichtet sind.
+
+7.5 Entscheidungsvorbereitung
+
+Stellt Informationen, Optionen, Annahmen, Risiken und relevante Erfahrungen zusammen.
+
+7.6 Erfahrungsrecherche
+
+Sucht relevante freigegebene Erfahrungen und erläutert, weshalb sie zur aktuellen Situation passen könnten und wo ihre Übertragbarkeit endet.
+
+7.7 Erfahrungsentwurf
+
+Schlägt nach Abschluss eines Vorhabens mögliche Erfahrungen vor. Nicht belegte Ergebnisse dürfen nicht erfunden werden.
+
+7.8 Kontrollierte Ausführung
+
+Jede schreibende oder externe Aktion benötigt eine definierte Berechtigung, einen zulässigen Ausgangszustand und einen nachvollziehbaren Ausführungspfad.
+
+Die KI darf fachliche Geschäftsregeln und Freigabebedingungen nicht eigenmächtig verändern.
+
+Externe Nachrichten werden standardmäßig erst nach menschlicher Freigabe versendet.
+
+8. Erfahrungen und Lernen
+
+Der Erfahrungsbestand wird in V2 bewusst einfach gehalten.
+
+Eine Erfahrung ist wiederverwendbar, wenn ihre Herkunft nachvollziehbar ist, ihre Belege geprüft wurden und ihre Gültigkeitsbedingungen ausreichend beschrieben sind.
+
+Die Anwendung muss zwischen folgenden Sachverhalten unterscheiden:
+
+1. Eine Maßnahme wurde durchgeführt.
+2. Ein bestimmtes Ergebnis wurde beobachtet.
+3. Ein Zusammenhang zwischen Maßnahme und Ergebnis wurde ausreichend belegt.
+
+Diese Aussagen dürfen nicht gleichgesetzt werden.
+
+Bei der Nutzung einer Erfahrung werden die Erfahrung, das aktuelle Vorhaben, die Anwendungsbegründung und das spätere Ergebnis miteinander verknüpft.
+
+Widersprüchliche Erfahrungen bleiben sichtbar. Frühere Versionen werden nicht stillschweigend überschrieben.
+
+Eine semantisch ähnliche Situation ist zunächst ein Suchtreffer. Die fachliche Anwendbarkeit muss anhand der konkreten Randbedingungen beurteilt werden.
+
+9. Automatisierung
+
+Automatisierungen werden zunächst auf wenige, eindeutig definierte Fälle begrenzt.
+
+Mindestumfang:
+
+* neue Anfrage: Verantwortungszuordnung anstoßen;
+* neue kritische Anforderung: erforderliche Prüfung sicherstellen;
+* neue oder geänderte Information: betroffene Klärungspunkte und Prüfungen ermitteln;
+* überfällige Aufgabe: Verantwortlichen informieren;
+* abgeschlossene Aufgabe: abhängige Aufgaben auf Freigabefähigkeit prüfen;
+* fehlgeschlagene Qualitätsprüfung: Korrekturbedarf sichtbar machen;
+* angeforderte Freigabe: zuständige Person informieren;
+* Abschluss eines Vorhabens: mögliche Erfahrungen zur Prüfung vorschlagen.
+
+Jede Automatisierung definiert Auslöser, Bedingungen, Berechtigungsprüfung, Aktion, erwarteten Folgezustand, Fehlerbehandlung und Protokollierung.
+
+Die wiederholte Verarbeitung desselben Ereignisses darf keine unbeabsichtigten doppelten Aufgaben, Nachrichten oder Freigabeanforderungen erzeugen.
+
+10. Monitoring
+
+Vorhabenansicht
+
+Zeigt Status, Verantwortliche, offene kritische Punkte, nächste Fristen, ausstehende Entscheidungen, relevante Aufgaben und Freigabefähigkeit.
+
+Persönliche Arbeitsansicht
+
+Zeigt eigene Aufgaben, erforderliche Beiträge, überfällige Arbeiten, neue Rückfragen und direkt ausführbare nächste Schritte.
+
+Portfolioansicht
+
+Die erste Version bietet eine einfache Übersicht aktiver Vorhaben, ihrer Arbeitsstatus, kritischer offener Punkte und ausstehender Freigaben.
+
+Weitere Kennzahlen, insbesondere Durchlaufzeiten, Nacharbeit und Erfahrungswirkung, werden erst ergänzt, wenn ihre Berechnungsgrundlage und Datenerhebung festgelegt sind.
+
+11. Dokumente und Versionierung
+
+Zwischenergebnisse können jederzeit aus den vorhandenen strukturierten Daten erzeugt werden.
+
+Mindestens erforderlich sind:
+
+* Anfrageübersicht;
+* Anforderungsübersicht;
+* technischer Klärungsstand;
+* Freigabevorlage;
+* finales Ergebnis.
+
+Das finale Ergebnis wird als PDF erzeugt. Eine strukturierte Übergabe an nachgelagerte Systeme kann ergänzt werden.
+
+Jede freigegebene Dokumentversion verweist auf einen eindeutigen Datenstand.
+
+Änderungen an relevanten Anforderungen, Entscheidungen oder Prüfergebnissen verändern ein freigegebenes Dokument nicht. Sie können eine erneute Prüfung und die Erzeugung einer neuen Version auslösen.
+
+12. Technische und sicherheitsbezogene Mindestanforderungen
+
+Die Umsetzung erfolgt mit den Datenmodulen, Regeln, Aktionen, Intent-UIs und KI-Funktionen von KLAR.
+
+Erforderlich sind:
+
+* stabile IDs und eindeutige Beziehungen;
+* Pflichtfeld- und Zustandsprüfungen;
+* nachvollziehbare Änderungen und Freigaben;
+* versionierte fachliche Aussagen, soweit erforderlich;
+* kontrollierte KI-Ausgaben mit struktureller Validierung;
+* Quellenbezüge für KI-abgeleitete Aussagen;
+* serverseitige Berechtigungsprüfungen;
+* zugriffsgeschützte Quellen und Vorhaben;
+* Trennung interner und externer Kommunikation;
+* definierte Aufbewahrungs- und Löschregeln;
+* nachvollziehbare Fehlerbehandlung für Automatisierungen.
+
+Daten werden nur an ausdrücklich zugelassene KI-Dienste übermittelt. Berechtigungen und Datenschutzregeln gelten auch für KI-Funktionen und Suchergebnisse.
+
+Wenn eine Aktion mehrere Datenobjekte verändert und keine atomare Transaktion verfügbar ist, muss die Anwendung den Vorgang durch kontrollierte Zustände, Wiederholbarkeit und Fehlerbehandlung absichern.
+
+Integrationen werden nur dann in V2 umgesetzt, wenn sie für den ausgewählten realen Anwendungsfall erforderlich sind.
